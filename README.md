@@ -37,9 +37,9 @@ Weeks 1–2 (from 5 Nov 2026) automatically show the lighter set counts.
 - **Optional sync** between phone and laptop uses your own free Supabase project:
   1. Create a project at [supabase.com](https://supabase.com).
   2. Open **SQL Editor**, paste [`supabase/schema.sql`](supabase/schema.sql) and run it. Row-level security means only you can read your rows.
-  3. In **Authentication → URL Configuration**, add `https://anand7474.github.io/gym-tracker/` to the redirect URLs.
-  4. Copy **Project URL** and the **anon public** key from Project Settings → API.
-  5. In the app, go to **Plan → Sync across devices**, paste both, then sign in with the email link. Do this once on each device.
+  3. In **Authentication → URL Configuration**, set the Site URL to `https://anand7474.github.io/gym-tracker/` (used by the account confirmation email).
+  4. Copy **Project URL** and the **publishable** (or legacy **anon public**) key from Project Settings → API Keys.
+  5. In the app, go to **Plan → Sync across devices**, paste both, then **Create account** (email + password) once and **Sign in** on each device.
   - Or add them as repo secrets `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` so every build has them built in. The anon key is safe to expose: access is controlled by the row-level security policies.
 
 ## Develop

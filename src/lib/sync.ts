@@ -51,11 +51,17 @@ export function init() {
   });
 }
 
-export async function signIn(email: string) {
+/** Email + password works the same in the browser and in the Android app (no redirect links). */
+export async function signIn(email: string, password: string) {
   if (!client) return "Add your Supabase details first.";
-  const redirect = window.location.origin + window.location.pathname;
-  const { error } = await client.auth.signInWithOtp({ email, options: { emailRedirectTo: redirect } });
+  const { error } = await client.auth.signInWithPassword({ email, password });
   return error ? error.message : null;
+}
+export async function signUp(email: string, password: string) {
+  if (!client) return "Add your Supabase details first.";
+  const { data, error } = await client.auth.signUp({ email, password, options: { emailRedirectTo: "https://anand7474.github.io/gym-tracker/" } });
+  if (error) return error.message;
+  return data.session ? null : "Account created. Open the confirmation email, tap the link, then sign in here.";
 }
 export async function signOut() { await client?.auth.signOut(); set("signed-out"); }
 

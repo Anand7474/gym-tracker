@@ -2,7 +2,7 @@ import { useState } from "react";
 import { PLAN } from "../data/plan";
 import { db, type DayRecord } from "../lib/db";
 import { SHORT_DAYS } from "../lib/dates";
-import { readConfig, saveConfig, signIn, signOut, syncNow } from "../lib/sync";
+import { readConfig, saveConfig, signIn, signOut, signUp, syncNow } from "../lib/sync";
 import { useSync } from "../lib/store";
 
 function SyncCard() {
@@ -11,13 +11,14 @@ function SyncCard() {
   const [url, setUrl] = useState(cfg?.url ?? "");
   const [key, setKey] = useState(cfg?.key ?? "");
   const [email, setEmail] = useState("");
+  const [pw, setPw] = useState("");
   const [msg, setMsg] = useState("");
 
   return (
     <section className="card" aria-labelledby="sync"><h2 id="sync">Sync across devices <small>{s.state === "off" ? "off" : s.state === "synced" ? "on" : s.state}</small></h2>
       {s.state === "off" || !s.configured ? (
         <form className="form" onSubmit={(e) => { e.preventDefault(); if (url && key) saveConfig({ url: url.trim(), key: key.trim() }); }}>
-          <p className="note">Your log is saved on this device. To see it on your phone and laptop, connect a free Supabase project (steps in the README).</p>
+          <p className="note">Your log is saved on this device. To see it on your phone and laptop, connect your Supabase project.</p>
           <label htmlFor="sb-url">Project URL</label>
           <input id="sb-url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://xxxx.supabase.co" autoComplete="off" />
           <label htmlFor="sb-key">Anon public key</label>
@@ -33,12 +34,15 @@ function SyncCard() {
           </div>
         </div>
       ) : (
-        <form className="form" onSubmit={async (e) => { e.preventDefault(); setMsg("Sending…"); const err = await signIn(email.trim()); setMsg(err ?? "Check your email and open the link on this device."); }}>
-          <p className="note">{s.state === "error" ? s.message : "Sign in with a one-time link. No password."}</p>
+        <form className="form" onSubmit={async (e) => { e.preventDefault(); setMsg("Signing in…"); const err = await signIn(email.trim(), pw); setMsg(err ?? ""); }}>
+          <p className="note">{s.state === "error" ? s.message : "Sign in with your email and a password. Use the same account on your phone and laptop."}</p>
           <label htmlFor="sb-email">Email</label>
           <input id="sb-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@gmail.com" autoComplete="email" />
+          <label htmlFor="sb-pw">Password</label>
+          <input id="sb-pw" type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="At least 6 characters" autoComplete="current-password" />
           <div className="actions">
-            <button className="btn primary" type="submit">Email me a sign-in link</button>
+            <button className="btn primary" type="submit" disabled={!email || pw.length < 6}>Sign in</button>
+            <button className="btn" type="button" disabled={!email || pw.length < 6} onClick={async () => { setMsg("Creating account…"); const r = await signUp(email.trim(), pw); setMsg(r ?? "Account created and signed in."); }}>Create account</button>
             <button className="btn ghost" type="button" onClick={() => saveConfig(null)}>Disconnect project</button>
           </div>
           {msg && <p className="note">{msg}</p>}
