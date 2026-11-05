@@ -24,7 +24,7 @@ const set = (s: SyncState, m = "") => { state = s; message = m; listeners.forEac
 
 export function readConfig(): SyncConfig | null {
   const envUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-  const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+  const envKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY) as string | undefined;
   if (envUrl && envKey) return { url: envUrl, key: envKey };
   try { const c = JSON.parse(localStorage.getItem(CFG_KEY) ?? "null"); return c?.url && c?.key ? c : null; } catch { return null; }
 }
