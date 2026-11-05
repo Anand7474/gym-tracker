@@ -30,3 +30,12 @@ export function useToday(todayKey: () => string) {
   }, [todayKey]);
   return t;
 }
+
+import { getHealth, subscribeHealth } from "./health";
+let hsnap = getHealth();
+export function useHealthState() {
+  return useSyncExternalStore(
+    (cb) => subscribeHealth(() => { hsnap = getHealth(); cb(); }),
+    () => hsnap,
+  );
+}

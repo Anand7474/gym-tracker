@@ -101,7 +101,7 @@ export function ProgressView({ days, today, openDay }: { days: Record<string, Da
             }),
           ])}
         </div>
-        <p className="legend"><span><i style={{ background: "var(--line)" }} />0%</span><span><i style={{ background: "var(--accent-soft)" }} />under 40%</span><span><i style={{ background: "var(--accent)" }} />40–69%</span><span><i style={{ background: "var(--done)" }} />70%+</span></p>
+        <p className="legend"><span><i style={{ background: "var(--line)" }} />0%</span><span><i style={{ background: "var(--heat1)" }} />under 40%</span><span><i style={{ background: "var(--heat3)" }} />40–69%</span><span><i style={{ background: "var(--done)" }} />70%+</span></p>
       </section>
 
       <section className="card"><h2>Strength <small>best set, kg × reps</small></h2>

@@ -1,0 +1,56 @@
+name: Build Android app
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - run: npm ci
+      - name: Build web app for the Android shell
+        run: npm run build
+        env:
+          BASE_PATH: /
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+      - run: npx cap sync android
+      - name: Build APK
+        working-directory: android
+        run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+      - run: cp android/app/build/outputs/apk/debug/app-debug.apk gym-tracker.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gym-tracker-apk
+          path: gym-tracker.apk
+      - name: Publish to the "android-latest" release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-latest
+          name: Android app (latest build)
+          body: |
+            Latest Android build of Gym Tracker (build ${{ github.run_number }}, commit ${{ github.sha }}).
+            Install: download gym-tracker.apk on your phone and open it, or `adb install -r gym-tracker.apk`.
+          files: gym-tracker.apk
+          make_latest: true

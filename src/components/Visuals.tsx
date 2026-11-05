@@ -14,15 +14,16 @@ export function Barbell({ pct }: { pct: number }) {
   const plate = (j: number, x: number) => {
     const p = PLATES[j];
     return <rect key={`${x}`} className={j >= fresh ? "plate new" : "plate"} x={x} y={33 - p.h / 2} width={10} height={p.h} rx={2}
-      fill={p.c} stroke={p.s ? "var(--steel)" : undefined} strokeWidth={p.s ? 1 : undefined} />;
+      fill={p.c} stroke={p.s ? "#8b95a7" : undefined} strokeWidth={p.s ? 1 : undefined} />;
   };
   return (
     <svg className="barbell" viewBox="0 0 320 66" role="img" aria-label={`${pct}% of today done: ${k} of 5 plates loaded each side`}>
-      <rect x={96} y={31} width={128} height={4} rx={2} fill="var(--steel)" />
-      <rect x={10} y={29} width={80} height={8} rx={2} fill="var(--steel)" />
-      <rect x={230} y={29} width={80} height={8} rx={2} fill="var(--steel)" />
-      <rect x={86} y={24} width={10} height={18} rx={2} fill="var(--steel)" />
-      <rect x={224} y={24} width={10} height={18} rx={2} fill="var(--steel)" />
+      <defs><linearGradient id="steel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#e9eef8" /><stop offset="1" stopColor="#8f9bb5" /></linearGradient></defs>
+      <rect x={96} y={31} width={128} height={4} rx={2} fill="url(#steel)" />
+      <rect x={10} y={29} width={80} height={8} rx={2} fill="url(#steel)" />
+      <rect x={230} y={29} width={80} height={8} rx={2} fill="url(#steel)" />
+      <rect x={86} y={24} width={10} height={18} rx={2} fill="url(#steel)" />
+      <rect x={224} y={24} width={10} height={18} rx={2} fill="url(#steel)" />
       {Array.from({ length: k }, (_, j) => [plate(j, 74 - j * 12), plate(j, 236 + j * 12)])}
     </svg>
   );
@@ -53,7 +54,7 @@ export const MUSCLE_LABEL: Record<MuscleKey, string> = {
 
 export function MuscleMap({ pri, sec, counts }: { pri?: MuscleKey[]; sec?: MuscleKey[]; counts?: Partial<Record<MuscleKey, number>> }) {
   const data: IExerciseData[] = [];
-  let colors = ["var(--accent-soft)", "var(--accent)"];
+  let colors = ["var(--musc-2)", "var(--accent)"];
   if (counts) {
     (Object.keys(counts) as MuscleKey[]).forEach((m) => data.push({ name: m, muscles: MUSCLES[m], frequency: counts[m] }));
     colors = ["var(--heat1)", "var(--heat2)", "var(--heat3)", "var(--heat4)"];
@@ -81,7 +82,6 @@ export function FrameLoop({ frames, alt }: { frames: string[]; alt: string }) {
     <button type="button" className={`frames${paused ? " paused" : ""}`} onClick={() => setPaused((p) => !p)}
       aria-label={`${alt}: start and end position. Tap to ${paused ? "play" : "pause"}.`}>
       {frames.map((f, i) => <img key={f} src={base + f} alt="" loading="lazy" decoding="async" className={`f${i}`} />)}
-      <span className="frames-tag">{paused ? "Paused · tap to play" : "Start ↔ finish"}</span>
     </button>
   );
 }

@@ -2,6 +2,10 @@ import { PLAN, type Exercise } from "../data/plan";
 import type { DayData, SetRow } from "./db";
 import { weekday, weekNo } from "./dates";
 
+/** Steps/sleep count as done when ticked, or when Health Connect shows the target was hit. */
+export const stepsDone = (d: DayData = {}) => !!d.steps || (d.health?.steps ?? 0) >= 8000;
+export const sleepDone = (d: DayData = {}) => !!d.sleep || (d.health?.sleepMin ?? 0) >= 420;
+
 export interface DayStats {
   pct: number; done: number; total: number;
   protein: number; kcal: number; proteinTarget: number; kcalTarget: number;
@@ -16,8 +20,8 @@ export function dayStats(date: string, d: DayData = {}): DayStats {
   const exDone = P.ex.filter((e) => ex[e.id]).length;
   done += exDone;
   if ((d.water ?? 0) >= 7) done++;
-  if (d.steps) done++;
-  if (d.sleep) done++;
+  if (stepsDone(d)) done++;
+  if (sleepDone(d)) done++;
   const prepItems = P.prep ?? [];
   prepItems.forEach((_, i) => { if (prep[i]) done++; });
   const total = P.meals.length + P.ex.length + 3 + prepItems.length;

@@ -3,6 +3,18 @@ import Dexie, { type Table } from "dexie";
 /** A logged set: [weight kg | null, reps-or-seconds | null] */
 export type SetRow = [number | null, number | null] | null;
 
+/** Daily summary read from Health Connect (Android app). */
+export interface HealthDay {
+  steps?: number;
+  distanceKm?: number;
+  activeKcal?: number;
+  hrAvg?: number; hrMin?: number; hrMax?: number;
+  restingHr?: number;
+  sleepMin?: number;
+  weight?: number;
+  workouts?: { type: string; min: number; kcal?: number; source?: string }[];
+}
+
 export interface DayData {
   meals?: Record<string, boolean>;
   ex?: Record<string, boolean>;
@@ -13,6 +25,7 @@ export interface DayData {
   weight?: number;         // kg, morning
   waist?: number;          // inches, Sundays
   prep?: Record<string, boolean>;
+  health?: HealthDay;
 }
 
 export interface DayRecord {

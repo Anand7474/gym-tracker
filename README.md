@@ -10,11 +10,21 @@ Anand's day-by-day fat-loss and muscle plan as an installable phone app. Each da
 2. Android: menu ⋮ → **Add to Home screen / Install app**. iPhone: Share → **Add to Home Screen**.
 3. It opens full-screen like a normal app and works offline in the gym. Videos need internet.
 
+## Android app (Health Connect)
+
+The same app also builds as an Android app that reads **Health Connect**: steps, distance, active calories, heart rate, resting heart rate, sleep, weight and workouts written by vivo Health, Fitbit and other apps. Steps and sleep habits tick themselves when you hit 8,000 steps or 7 hours, and the weight you type is saved back to Health Connect.
+
+- Every push to `main` builds `gym-tracker.apk` and publishes it to the [android-latest release](https://github.com/Anand7474/gym-tracker/releases/tag/android-latest).
+- Install: download the APK on the phone and open it, or `adb install -r gym-tracker.apk` over USB.
+- First launch: tap **Connect Health Connect** on the Today screen and allow the data types.
+- The APK is signed with `android/app/gymtracker.keystore` so new builds install over old ones. It's a personal sideloaded app; for a Play Store release, use a private key stored as a repo secret instead.
+
 ## What's inside
 
 | Screen | What you can do |
 | --- | --- |
 | Today | Opens on today's date. Tick meals (kcal and protein add up), water glasses, steps, sleep, morning weight. Each exercise has start/finish photos, a muscle map, a form video that plays inside the app, how-to steps, a rest timer and kg × reps logging that shows last session's numbers. |
+| Coach | Tips from your last two weeks (weight trend, steps, sleep, protein, training, resting heart rate, stalled lifts), plus a **Coach report** you can copy and send to Claude for a full review. |
 | Progress | Weight trend against the 85 kg goal, streak, consistency calendar, muscles trained this week, best sets on key lifts, Sunday waist log. |
 | Plan | Targets, weekly split, training and food rules, when to adjust, sync setup and backup. |
 
@@ -40,7 +50,7 @@ npm run dev        # http://localhost:5173/gym-tracker/
 npm run build      # type-check + production build into dist/
 ```
 
-Stack: Vite, React 18, TypeScript, Dexie (IndexedDB), Supabase JS, vite-plugin-pwa, react-body-highlighter. Pushing to `main` deploys to GitHub Pages via `.github/workflows/deploy.yml`.
+Stack: Vite, React 18, TypeScript, Dexie (IndexedDB), Supabase JS, vite-plugin-pwa, react-body-highlighter, Capacitor 8 + @capgo/capacitor-health (Android). Pushing to `main` deploys to GitHub Pages via `.github/workflows/deploy.yml`.
 
 ### Where things live
 
