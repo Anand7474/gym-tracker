@@ -19,8 +19,14 @@ let pushTimer: number | undefined;
 let busy = false;
 
 export const subscribeSync = (fn: Listener) => { listeners.add(fn); return () => { listeners.delete(fn); }; };
-export const getSync = () => ({ state, message, email: session?.user.email ?? null, configured: !!client });
-const set = (s: SyncState, m = "") => { state = s; message = m; listeners.forEach((l) => l()); };
+type SyncSnap = { state: SyncState; message: string; email: string | null; configured: boolean };
+let snap: SyncSnap = { state, message, email: null, configured: false };
+export const getSync = () => snap;
+const set = (s: SyncState, m = "") => {
+  state = s; message = m;
+  snap = { state, message, email: session?.user.email ?? null, configured: !!client };
+  listeners.forEach((l) => l());
+};
 
 export function readConfig(): SyncConfig | null {
   const envUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;

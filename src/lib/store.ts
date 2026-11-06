@@ -13,12 +13,9 @@ export function useDays(): Record<string, DayData> | undefined {
   }, []);
 }
 
-let snap = getSync();
+/** Snapshots are immutable objects replaced on every change, so they can be read directly. */
 export function useSync() {
-  return useSyncExternalStore(
-    (cb) => subscribeSync(() => { snap = getSync(); cb(); }),
-    () => snap,
-  );
+  return useSyncExternalStore(subscribeSync, getSync);
 }
 
 /** Re-render at midnight so "today" rolls over while the app stays open. */
@@ -32,10 +29,6 @@ export function useToday(todayKey: () => string) {
 }
 
 import { getHealth, subscribeHealth } from "./health";
-let hsnap = getHealth();
 export function useHealthState() {
-  return useSyncExternalStore(
-    (cb) => subscribeHealth(() => { hsnap = getHealth(); cb(); }),
-    () => hsnap,
-  );
+  return useSyncExternalStore(subscribeHealth, getHealth);
 }
