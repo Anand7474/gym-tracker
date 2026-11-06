@@ -71,6 +71,36 @@ export async function signUp(email: string, password: string) {
 }
 export async function signOut() { await client?.auth.signOut(); set("signed-out"); }
 
+const orMap = (a?: Record<string, boolean>, b?: Record<string, boolean>) => {
+  const out: Record<string, boolean> = { ...(b ?? {}) };
+  Object.entries(a ?? {}).forEach(([k, v]) => { if (v) out[k] = true; });
+  return out;
+};
+
+/** Field-level merge of two versions of the same day. Ticks are unioned, so nothing done on either device is lost. */
+export function mergeDays(local: DayData, remote: DayData, localNewer: boolean): DayData {
+  const pick = <T,>(a: T | undefined, b: T | undefined) => (a === undefined ? b : b === undefined ? a : localNewer ? a : b);
+  const sets: DayData["sets"] = { ...(remote.sets ?? {}) };
+  Object.entries(local.sets ?? {}).forEach(([id, rows]) => {
+    const other = sets[id] ?? [];
+    const len = Math.max(rows.length, other.length);
+    sets[id] = Array.from({ length: len }, (_, i) => rows[i] ?? other[i] ?? null);
+  });
+  const ls = local.health?.steps ?? -1, rs = remote.health?.steps ?? -1;
+  return {
+    meals: orMap(local.meals, remote.meals),
+    ex: orMap(local.ex, remote.ex),
+    prep: orMap(local.prep, remote.prep),
+    sets,
+    water: Math.max(local.water ?? 0, remote.water ?? 0) || undefined,
+    steps: local.steps || remote.steps || undefined,
+    sleep: local.sleep || remote.sleep || undefined,
+    weight: pick(local.weight, remote.weight),
+    waist: pick(local.waist, remote.waist),
+    health: ls >= rs ? (local.health ?? remote.health) : remote.health,
+  };
+}
+
 export async function syncNow() {
   if (!client || !session || busy) return;
   busy = true; set("syncing");
@@ -81,7 +111,13 @@ export async function syncNow() {
     for (const r of rows ?? []) {
       const remoteAt = Date.parse(r.updated_at as string);
       const local = await db.days.get(r.date as string);
-      if (!local || (remoteAt > local.updatedAt)) {
+      if (!local) {
+        await db.days.put({ date: r.date as string, data: r.data as DayData, updatedAt: remoteAt, dirty: 0 });
+      } else if (local.dirty) {
+        // Both sides changed this day: merge instead of letting one overwrite the other.
+        const merged = mergeDays(local.data, r.data as DayData, local.updatedAt >= remoteAt);
+        await db.days.put({ date: local.date, data: merged, updatedAt: Math.max(Date.now(), remoteAt + 1), dirty: 1 });
+      } else if (remoteAt > local.updatedAt) {
         await db.days.put({ date: r.date as string, data: r.data as DayData, updatedAt: remoteAt, dirty: 0 });
       }
     }
