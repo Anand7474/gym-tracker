@@ -15,7 +15,7 @@ function SyncCard() {
   const [msg, setMsg] = useState("");
 
   return (
-    <section className="card" aria-labelledby="sync"><h2 id="sync">Sync across devices <small>{s.state === "off" ? "off" : s.state === "synced" ? "on" : s.state}</small></h2>
+    <section className="card" aria-labelledby="sync"><h2 id="sync">Sync across devices <small>{s.state === "off" ? "Off" : s.state === "synced" ? "On" : s.state === "syncing" ? "Syncing…" : s.state === "signed-out" ? "Not signed in" : "Problem"}</small></h2>
       {s.state === "off" || !s.configured ? (
         <form className="form" onSubmit={(e) => { e.preventDefault(); if (url && key) saveConfig({ url: url.trim(), key: key.trim() }); }}>
           <p className="note">Your log is saved on this device. To see it on your phone and laptop, connect your Supabase project.</p>
