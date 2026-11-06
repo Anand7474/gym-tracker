@@ -54,6 +54,7 @@ export function ExerciseCard({ e, index, total, date, day, prev }: {
     <article className={`ex${done ? " done" : ""}`} id={`ex-${e.id}`}>
       <div className="media">
         {lib && <FrameLoop frames={lib.frames} alt={e.name} />}
+        <span className="num-badge">{index + 1}</span>
         <span className="tag">{done ? "Done ✓" : "Tap photo to pause"}</span>
         <div className="over">
           <small>Exercise {index + 1} of {total}</small>

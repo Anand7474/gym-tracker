@@ -9,12 +9,13 @@
   --heat1: #c9d6fa; --heat2: #8eaaf2; --heat3: #4f78e6; --heat4: #2f6bff;
   --shadow: 0 1px 2px rgba(13, 19, 33, .05), 0 10px 30px -18px rgba(13, 19, 33, .35);
   --radius: 22px;
+  --c-coach: #d97706; --c-health: #059669; --c-habits: #0284c7; --c-meals: #ea580c; --c-workout: #2f6bff; --c-prep: #9333ea;
   --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
   --body: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #060a14; --surface: #0f1626; --surface-2: #141d31; --ink: #e9eef7; --muted: #93a0b5; --line: #1f2a40;
     --navy: #0e1a3d; --navy-2: #1b2c63;
     --accent: #5b8cff; --accent-soft: #1b2a55;
@@ -23,7 +24,19 @@
     --heat1: #1d2b52; --heat2: #2c4589; --heat3: #4167cf; --heat4: #5b8cff;
     --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 12px 30px -18px rgba(0, 0, 0, .9);
     color-scheme: dark;
+    --c-coach: #fbbf24; --c-health: #34d399; --c-habits: #38bdf8; --c-meals: #fb923c; --c-workout: #6d97ff; --c-prep: #c084fc;
   }
+}
+:root[data-theme="dark"] {
+    --bg: #060a14; --surface: #0f1626; --surface-2: #141d31; --ink: #e9eef7; --muted: #93a0b5; --line: #1f2a40;
+    --navy: #0e1a3d; --navy-2: #1b2c63;
+    --accent: #5b8cff; --accent-soft: #1b2a55;
+    --done: #35c77b; --done-soft: #10291c; --warn: #ff8a4c; --warn-soft: #34190c;
+    --fig: #222c42; --steel: #6e7b93; --musc-2: #3a5bb3;
+    --heat1: #1d2b52; --heat2: #2c4589; --heat3: #4167cf; --heat4: #5b8cff;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 12px 30px -18px rgba(0, 0, 0, .9);
+    color-scheme: dark;
+    --c-coach: #fbbf24; --c-health: #34d399; --c-habits: #38bdf8; --c-meals: #fb923c; --c-workout: #6d97ff; --c-prep: #c084fc;
 }
 * { box-sizing: border-box }
 html, body { margin: 0; overflow-x: clip }
@@ -256,3 +269,83 @@ td.n { font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 700
   .plate.new, .fade-in { animation: none }
   .frames .f1 { animation-duration: 4s }
 }
+
+/* ---------- section identities ---------- */
+.sec { --sec: var(--accent); border-color: color-mix(in srgb, var(--sec) 28%, var(--line));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--sec) 11%, var(--surface)) 0, var(--surface) 110px) }
+.sec.coach { --sec: var(--c-coach) } .sec.health { --sec: var(--c-health) } .sec.habits { --sec: var(--c-habits) }
+.sec.meals { --sec: var(--c-meals) } .sec.workout { --sec: var(--c-workout) } .sec.prep { --sec: var(--c-prep) }
+.sec-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px }
+.sec-ico { flex: none; width: 40px; height: 40px; border-radius: 13px; display: grid; place-items: center; color: #fff; background: var(--sec);
+  box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--sec) 80%, transparent) }
+.sec-ico svg { width: 22px; height: 22px }
+.sec-head .tt { flex: 1; min-width: 0 }
+.sec-head h2 { font-size: 22px; line-height: 1.1 }
+.sec-head .sub { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-top: 2px }
+.sec-meta { flex: none; font-size: 12px; font-weight: 800; padding: 5px 10px; border-radius: 999px; color: var(--sec); background: color-mix(in srgb, var(--sec) 14%, transparent) }
+.sec .tip { background: var(--surface); }
+.sec .htile { background: color-mix(in srgb, var(--sec) 7%, var(--surface)); border-color: color-mix(in srgb, var(--sec) 20%, var(--line)) }
+.sec .btn.ghost { border-color: color-mix(in srgb, var(--sec) 35%, var(--line)) }
+
+/* section jump chips */
+.jump { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 2px 16px 4px }
+.jump::-webkit-scrollbar { display: none }
+.jump a { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px 0 8px; border-radius: 999px; text-decoration: none; font-size: 13px; font-weight: 800; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow) }
+.jump a i { width: 18px; height: 18px; border-radius: 6px; background: var(--c); display: grid; place-items: center; color: #fff; font-style: normal; font-size: 11px }
+.jump a b { color: var(--muted); font-weight: 700 }
+[id^="sec-"] { scroll-margin-top: 170px }
+
+/* habits: tiles */
+.waterbox { border-radius: 18px; padding: 14px; background: color-mix(in srgb, var(--c-habits) 9%, var(--surface)); border: 1px solid color-mix(in srgb, var(--c-habits) 22%, var(--line)) }
+.waterbox .big { display: flex; align-items: baseline; gap: 6px; margin-bottom: 8px }
+.waterbox .big b { font-family: var(--display); font-stretch: 112%; font-size: 30px; line-height: 1 }
+.waterbox .big span { color: var(--muted); font-weight: 700; font-size: 13px; flex: 1 }
+.waterbox .big small { color: var(--muted); font-size: 12px; font-weight: 700 }
+.glass .fill { fill: var(--c-habits) }
+.htiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px }
+.hbtn { position: relative; text-align: left; display: grid; gap: 6px; padding: 14px; border-radius: 18px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; min-height: 112px }
+.hbtn .hi { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; background: var(--surface-2); color: var(--muted) }
+.hbtn .hi svg { width: 20px; height: 20px }
+.hbtn b { font-weight: 800; font-size: 15px; line-height: 1.2 }
+.hbtn small { color: var(--muted); font-size: 12px; font-weight: 600 }
+.hbtn .box { position: absolute; top: 12px; right: 12px; width: 24px; height: 24px }
+.hbtn.done { background: var(--done-soft); border-color: transparent }
+.hbtn.done .hi { background: var(--done); color: #fff }
+.hbtn .auto { position: absolute; top: 16px; right: 44px }
+.weightbox { margin-top: 10px }
+
+/* meals: timeline */
+.timeline { position: relative; display: grid; gap: 10px }
+.timeline::before { content: ""; position: absolute; left: 31px; top: 14px; bottom: 14px; width: 2px; border-radius: 2px; background: color-mix(in srgb, var(--c-meals) 30%, var(--line)) }
+.meal { position: relative; display: grid; grid-template-columns: 64px 1fr auto; gap: 10px; align-items: center; width: 100%; text-align: left; padding: 10px 12px 10px 0; border: none; background: none; cursor: pointer; border-radius: 16px }
+.meal .when { position: relative; z-index: 1; justify-self: center; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: var(--surface); border: 2px solid color-mix(in srgb, var(--c-meals) 45%, var(--line)); line-height: 1 }
+.meal .when b { font-family: var(--display); font-size: 15px; font-weight: 800 }
+.meal .when small { font-size: 10px; font-weight: 800; color: var(--muted); margin-top: 2px }
+.meal .what b { display: block; font-weight: 800; line-height: 1.25 }
+.meal .what small { display: block; color: var(--muted); font-size: 13px; margin-top: 2px }
+.meal .what .mac { display: inline-flex; gap: 6px; margin-top: 6px }
+.meal .what .mac span { font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line) }
+.meal .what .mac span.p { color: var(--c-meals); background: color-mix(in srgb, var(--c-meals) 12%, transparent); border-color: transparent }
+.meal.done .when { background: var(--done); border-color: var(--done); color: #fff }
+.meal.done .when small { color: rgba(255, 255, 255, .85) }
+.meal.done .what b { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 2px; text-decoration-color: color-mix(in srgb, var(--done) 70%, transparent) }
+.meal .box { width: 30px; height: 30px }
+
+/* workout banner */
+.wbanner { border-radius: var(--radius); padding: 16px; color: #fff; overflow: hidden; position: relative;
+  background: radial-gradient(120% 120% at 100% 0, rgba(255, 255, 255, .18), transparent 50%), linear-gradient(135deg, var(--c-workout), color-mix(in srgb, var(--c-workout) 55%, #0b1530));
+  box-shadow: 0 16px 30px -18px color-mix(in srgb, var(--c-workout) 80%, transparent) }
+.wbanner .sec-head { margin-bottom: 10px }
+.wbanner .sec-ico { background: rgba(255, 255, 255, .18); box-shadow: none }
+.wbanner .sub { color: rgba(255, 255, 255, .8) }
+.wbanner .sec-meta { color: #fff; background: rgba(255, 255, 255, .18) }
+.wbanner .bar { background: rgba(255, 255, 255, .2) }
+.wbanner .bar i { background: #fff }
+.wbanner p { margin: 10px 0 0; font-size: 13px; color: rgba(255, 255, 255, .85) }
+.media .num-badge { position: absolute; left: 12px; top: 12px; z-index: 2; width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; font-family: var(--display); font-weight: 900; color: #fff; background: var(--c-workout); box-shadow: 0 4px 12px rgba(0, 0, 0, .3) }
+.media .tag { left: auto; right: 12px }
+
+/* theme toggle */
+.themebtn svg { width: 19px; height: 19px }
+.themebtn small { display: none }

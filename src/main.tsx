@@ -4,6 +4,9 @@ import App from "./App";
 import { init as initSync } from "./lib/sync";
 import { initHealth, isNativeApp } from "./lib/health";
 import "./styles.css";
+import { applyTheme } from "./lib/theme";
+
+applyTheme();
 
 initSync();
 void initHealth();

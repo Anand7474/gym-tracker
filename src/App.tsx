@@ -8,6 +8,8 @@ import { TodayView } from "./components/TodayView";
 import { ProgressView } from "./components/ProgressView";
 import { PlanView } from "./components/PlanView";
 import { CoachView } from "./components/CoachView";
+import { Icon } from "./components/Icons";
+import { getTheme, nextTheme, setTheme, type ThemeMode } from "./lib/theme";
 
 type View = "today" | "progress" | "coach" | "plan";
 const VIEWS: View[] = ["today", "progress", "coach", "plan"];
@@ -28,6 +30,14 @@ export default function App() {
   const [date, setDate] = useState(today);
   const [view, setView] = useState<View>(viewFromHash);
   const sync = useSync();
+  const [theme, setThemeState] = useState<ThemeMode>(getTheme);
+  const cycleTheme = () => { const n = nextTheme(theme); setTheme(n); setThemeState(n); };
+  const themeBtn = (
+    <button type="button" className="iconbtn themebtn" onClick={cycleTheme}
+      aria-label={`Theme: ${theme === "auto" ? "follows phone" : theme}. Tap to change.`} title={`Theme: ${theme}`}>
+      {theme === "light" ? Icon.sun : theme === "dark" ? Icon.moon : Icon.auto}
+    </button>
+  );
 
   useEffect(() => { const f = () => setView(viewFromHash()); window.addEventListener("hashchange", f); return () => window.removeEventListener("hashchange", f); }, []);
   const go = (v: View) => { history.replaceState(null, "", v === "today" ? location.pathname : `#${v}`); setView(v); window.scrollTo(0, 0); };
@@ -49,6 +59,7 @@ export default function App() {
                   <h2>{date === today ? "Today" : nice(date)}</h2>
                 </div>
                 {date !== today && <button type="button" className="chipbtn" onClick={() => setDate(today)}>Today</button>}
+                {themeBtn}
                 <button type="button" className="iconbtn" aria-label="Previous day" onClick={() => setDate(addDays(date, -1))}>
                   <svg width="18" height="18" viewBox="0 0 18 18"><path d="M11 3L5 9l6 6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" /></svg>
                 </button>
@@ -71,7 +82,7 @@ export default function App() {
             </>
           ) : (
             <div className="titlebar"><div className="t"><small><span className={`syncdot ${dot}`} />{syncLine}</small>
-              <h2>{view === "progress" ? "Progress" : view === "coach" ? "Coach" : "Your plan"}</h2></div></div>
+              <h2>{view === "progress" ? "Progress" : view === "coach" ? "Coach" : "Your plan"}</h2></div>{themeBtn}</div>
           )}
         </div>
       </header>

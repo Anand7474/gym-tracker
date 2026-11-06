@@ -4,6 +4,7 @@ import { db, type DayRecord } from "../lib/db";
 import { SHORT_DAYS } from "../lib/dates";
 import { readConfig, saveConfig, signIn, signOut, signUp, syncNow } from "../lib/sync";
 import { useSync } from "../lib/store";
+import { getTheme, setTheme, type ThemeMode } from "../lib/theme";
 
 function SyncCard() {
   const s = useSync();
@@ -82,6 +83,20 @@ function BackupCard() {
   );
 }
 
+function AppearanceCard() {
+  const [mode, setMode] = useState<ThemeMode>(getTheme);
+  const pick = (m: ThemeMode) => { setTheme(m); setMode(m); };
+  return (
+    <section className="card"><h2>Appearance</h2>
+      <div className="seg" role="group" aria-label="Theme">
+        {(["auto", "light", "dark"] as ThemeMode[]).map((m) => (
+          <button key={m} type="button" aria-pressed={mode === m} onClick={() => pick(m)}>{m === "auto" ? "Match phone" : m === "light" ? "Light" : "Dark"}</button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export function PlanView({ gotoWeekday }: { gotoWeekday: (wd: number) => void }) {
   return (
     <>
@@ -138,6 +153,7 @@ export function PlanView({ gotoWeekday }: { gotoWeekday: (wd: number) => void })
         </tbody></table>
       </section>
 
+      <AppearanceCard />
       <SyncCard />
       <BackupCard />
 
