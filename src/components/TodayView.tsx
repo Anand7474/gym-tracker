@@ -1,14 +1,25 @@
 import type React from "react";
+import { Fragment, type ReactNode } from "react";
 import { PLAN, START_WEIGHT } from "../data/plan";
 import { updateDay, type DayData, type SetRow } from "../lib/db";
 import { DAY_NAMES, todayKey, weekNo, weekday } from "../lib/dates";
 import { dayStats, isLightWeek, sleepDone, stepsDone } from "../lib/stats";
-import { pushWeight } from "../lib/health";
+import { isNativeApp, pushWeight } from "../lib/health";
 import { Barbell } from "./Visuals";
 import { CHECK, ExerciseCard } from "./ExerciseCard";
 import { HealthCard } from "./HealthCard";
 import { CoachMini } from "./CoachView";
 import { Icon, SecHead } from "./Icons";
+
+type SecKey = "health" | "habits" | "meals" | "workout" | "prep" | "coach";
+const JUMP: Record<SecKey, { label: string; color: string; icon: ReactNode }> = {
+  health: { label: "Health", color: "var(--c-health)", icon: Icon.health },
+  habits: { label: "Habits", color: "var(--c-habits)", icon: Icon.habits },
+  meals: { label: "Meals", color: "var(--c-meals)", icon: Icon.meals },
+  workout: { label: "Workout", color: "var(--c-workout)", icon: Icon.workout },
+  prep: { label: "Prep", color: "var(--c-prep)", icon: Icon.prep },
+  coach: { label: "Coach", color: "var(--c-coach)", icon: Icon.coach },
+};
 
 function lastSets(days: Record<string, DayData>, id: string, before: string) {
   const keys = Object.keys(days).filter((k) => k < before).sort().reverse();
@@ -30,45 +41,30 @@ export function TodayView({ date, days, openCoach }: { date: string; days: Recor
     { k: "sleep" as const, t: "Slept 7+ hours", s: D.health?.sleepMin ? `${(D.health.sleepMin / 60).toFixed(1)} h from Health Connect` : "In bed by 11:30 pm", auto: !D.sleep && sleepDone(D) },
   ];
 
-  return (
-    <>
-      <section className="hero fade-in" aria-label="Day summary">
-        <div className="chips">
-          {wn >= 1 && <span className="chip">Week {wn}</span>}
-          <span className={`chip ${P.food === "Veg" ? "veg" : "nonveg"}`}>{P.food}</span>
-          <span className="chip">{P.gym.replace("Gym ", "")}</span>
-        </div>
-        <div className="hero-top">
-          <div>
-            <h1>{P.title}</h1>
-            <p className="focus">{DAY_NAMES[wd]} · {P.focus}</p>
-          </div>
-          <div className="pct"><b className="num">{st.pct}</b><small>% done</small></div>
-        </div>
-        <Barbell pct={st.pct} />
-        <div className="meters">
-          <div className="meter"><small><span>Protein</span><b className="num">{st.protein} / {st.proteinTarget} g</b></small><div className="bar"><i style={{ width: `${Math.min(100, (st.protein / st.proteinTarget) * 100)}%` }} /></div></div>
-          <div className="meter"><small><span>Calories</span><b className="num">{st.kcal} / {st.kcalTarget}</b></small><div className="bar blue"><i style={{ width: `${Math.min(100, (st.kcal / st.kcalTarget) * 100)}%` }} /></div></div>
-        </div>
-      </section>
 
-      {date > today && <p className="banner">This day hasn't come yet. You can preview the plan.</p>}
+  // Most-needed first: what matters at this time of day, finished sections sink to the bottom.
+  const hour = new Date().getHours();
+  const isToday = date === today;
+  const base: SecKey[] = !isToday ? ["workout", "meals", "habits", "prep", "health"]
+    : wd === 0 ? (hour < 12 ? ["habits", "meals", "prep", "workout", "health", "coach"] : ["prep", "meals", "habits", "workout", "health", "coach"])
+    : hour < 11 ? ["habits", "meals", "workout", "health", "coach"]
+    : hour < 18 ? ["meals", "habits", "workout", "health", "coach"]
+    : hour < 23 ? ["workout", "meals", "habits", "health", "coach"]
+    : ["habits", "meals", "workout", "health", "coach"];
+  const finished: Record<SecKey, boolean> = {
+    habits: stepsDone(D) && sleepDone(D) && water >= 7 && D.weight != null,
+    meals: P.meals.every((_, i) => D.meals?.[i]),
+    workout: st.exDone === st.exTotal,
+    prep: !P.prep || P.prep.every((_, i) => D.prep?.[i]),
+    health: false, coach: false,
+  };
+  const order = base.filter((k) => k !== "prep" || P.prep).sort((a, b) => Number(finished[a]) - Number(finished[b]));
 
-      <nav className="jump" aria-label="Jump to section">
-        {[
-          ["sec-health", "Health", "var(--c-health)", Icon.health, ""],
-          ["sec-habits", "Habits", "var(--c-habits)", Icon.habits, `${(stepsDone(D) ? 1 : 0) + (sleepDone(D) ? 1 : 0) + (water >= 7 ? 1 : 0)}/3`],
-          ["sec-meals", "Meals", "var(--c-meals)", Icon.meals, `${P.meals.filter((_, i) => D.meals?.[i]).length}/${P.meals.length}`],
-          ["sec-workout", wd === 0 ? "Activity" : "Workout", "var(--c-workout)", Icon.workout, `${st.exDone}/${st.exTotal}`],
-          ...(date === today ? [["sec-coach", "Coach", "var(--c-coach)", Icon.coach, ""]] : []),
-        ].map(([id, label, c, ic, n]) => (
-          <a key={id as string} href={`#${id}`} onClick={(e) => { e.preventDefault(); document.getElementById(id as string)?.scrollIntoView({ behavior: "smooth" }); }}
-            style={{ ["--c" as string]: c } as React.CSSProperties}><i>{ic}</i>{label}{n ? <b>{n}</b> : null}</a>
-        ))}
-      </nav>
-
+  const SECTIONS: Record<SecKey, ReactNode> = {
+    health: <>
       <HealthCard h={D.health} isToday={date === today} />
-
+      </>,
+    habits: <>
       <section className="card sec habits" id="sec-habits" aria-labelledby="hab">
         <SecHead id="hab" icon={Icon.habits} title="Daily habits" sub="Water, steps, sleep, weight" meta={`${(stepsDone(D) ? 1 : 0) + (sleepDone(D) ? 1 : 0) + (water >= 7 ? 1 : 0)} / 3`} />
         <div className="waterbox">
@@ -111,7 +107,8 @@ export function TodayView({ date, days, openCoach }: { date: string; days: Recor
           </div>
         )}
       </section>
-
+      </>,
+    meals: <>
       <section className="card sec meals" id="sec-meals" aria-labelledby="mls">
         <SecHead id="mls" icon={Icon.meals} title="Meals" sub={`${st.kcalTarget} kcal · ${st.proteinTarget} g protein planned`} meta={`${P.meals.filter((_, i) => D.meals?.[i]).length} / ${P.meals.length}`} />
         <div className="timeline">
@@ -129,14 +126,16 @@ export function TodayView({ date, days, openCoach }: { date: string; days: Recor
           })}
         </div>
       </section>
-
+      </>,
+    workout: <>
       <section className="wbanner" id="sec-workout" aria-labelledby="wo">
         <SecHead id="wo" icon={Icon.workout} title={wd === 0 ? "Activity" : `Workout: ${P.title}`} sub={`${P.ex.length} ${wd === 0 ? "activities" : "exercises"} · ${P.gym}`} meta={`${st.exDone} / ${st.exTotal}`} />
         <div className="bar"><i style={{ width: `${(st.exDone / st.exTotal) * 100}%` }} /></div>
         {isLightWeek(date) && wd !== 0 && wd !== 4 && <p><b>Light weeks (1–2):</b> 2 sets each, 3 for the first lift. Leave 3 reps in the tank.</p>}
       </section>
       {P.ex.map((e, i) => <ExerciseCard key={`${date}-${e.id}`} e={e} index={i} total={P.ex.length} date={date} day={D} prev={lastSets(days, e.id, date)} />)}
-
+      </>,
+    prep: <>
       {P.prep && (
         <section className="card sec prep" id="sec-prep" aria-labelledby="prp">
           <SecHead id="prp" icon={Icon.prep} title="Sunday prep" sub="Set up the week" meta={`${P.prep.filter((_, i) => D.prep?.[i]).length} / ${P.prep.length}`} />
@@ -153,8 +152,51 @@ export function TodayView({ date, days, openCoach }: { date: string; days: Recor
           </div>
         </section>
       )}
-
+      </>,
+    coach: <>
       {date === today && <CoachMini days={days} today={today} open={openCoach} />}
+      </>,
+  };
+
+  return (
+    <>
+      <section className="hero fade-in" aria-label="Day summary">
+        <div className="chips">
+          {wn >= 1 && <span className="chip">Week {wn}</span>}
+          <span className={`chip ${P.food === "Veg" ? "veg" : "nonveg"}`}>{P.food}</span>
+          <span className="chip">{P.gym.replace("Gym ", "")}</span>
+        </div>
+        <div className="hero-top">
+          <div>
+            <h1>{P.title}</h1>
+            <p className="focus">{DAY_NAMES[wd]} · {P.focus}</p>
+          </div>
+          <div className="pct"><b className="num">{st.pct}</b><small>% done</small></div>
+        </div>
+        <Barbell pct={st.pct} />
+        <div className="meters">
+          <div className="meter"><small><span>Protein</span><b className="num">{st.protein} / {st.proteinTarget} g</b></small><div className="bar"><i style={{ width: `${Math.min(100, (st.protein / st.proteinTarget) * 100)}%` }} /></div></div>
+          <div className="meter"><small><span>Calories</span><b className="num">{st.kcal} / {st.kcalTarget}</b></small><div className="bar blue"><i style={{ width: `${Math.min(100, (st.kcal / st.kcalTarget) * 100)}%` }} /></div></div>
+        </div>
+      </section>
+
+      {date > today && <p className="banner">This day hasn't come yet. You can preview the plan.</p>}
+
+      <nav className="jump" aria-label="Jump to section">
+        {order.filter((k) => k !== "health" || D.health || isNativeApp()).map((k) => {
+          const c = JUMP[k];
+          const n = k === "habits" ? `${(stepsDone(D) ? 1 : 0) + (sleepDone(D) ? 1 : 0) + (water >= 7 ? 1 : 0)}/3`
+            : k === "meals" ? `${P.meals.filter((_, i) => D.meals?.[i]).length}/${P.meals.length}`
+            : k === "workout" ? `${st.exDone}/${st.exTotal}`
+            : k === "prep" && P.prep ? `${P.prep.filter((_, i) => D.prep?.[i]).length}/${P.prep.length}` : "";
+          return (
+            <a key={k} href={`#sec-${k}`} onClick={(e) => { e.preventDefault(); document.getElementById(`sec-${k}`)?.scrollIntoView({ behavior: "smooth" }); }}
+              style={{ ["--c" as string]: c.color } as React.CSSProperties}><i>{c.icon}</i>{k === "workout" && wd === 0 ? "Activity" : c.label}{n ? <b>{n}</b> : null}{finished[k] ? " ✓" : ""}</a>
+          );
+        })}
+      </nav>
+
+      {order.map((k) => <Fragment key={k}>{SECTIONS[k]}</Fragment>)}
     </>
   );
 }
