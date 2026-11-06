@@ -6,8 +6,16 @@ export function getTheme(): ThemeMode {
   try { const v = localStorage.getItem(KEY); return v === "light" || v === "dark" ? v : "auto"; } catch { return "auto"; }
 }
 
+const GLASS = "gym-glass";
+export const getGlass = () => { try { return localStorage.getItem(GLASS) !== "0"; } catch { return true; } };
+export function setGlass(on: boolean) {
+  try { localStorage.setItem(GLASS, on ? "1" : "0"); } catch { /* ignore */ }
+  document.documentElement.classList.toggle("fx-glass", on);
+}
+
 export function applyTheme(mode: ThemeMode = getTheme()) {
   const root = document.documentElement;
+  root.classList.toggle("fx-glass", getGlass());
   if (mode === "auto") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", mode);
   const dark = mode === "dark" || (mode === "auto" && window.matchMedia("(prefers-color-scheme: dark)").matches);
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", dark ? "#060a14" : "#eef1f6");

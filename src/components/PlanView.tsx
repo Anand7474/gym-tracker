@@ -4,7 +4,7 @@ import { db, type DayRecord } from "../lib/db";
 import { SHORT_DAYS } from "../lib/dates";
 import { readConfig, saveConfig, signIn, signOut, signUp, syncNow } from "../lib/sync";
 import { useSync } from "../lib/store";
-import { getTheme, setTheme, type ThemeMode } from "../lib/theme";
+import { getGlass, getTheme, setGlass, setTheme, type ThemeMode } from "../lib/theme";
 
 function SyncCard() {
   const s = useSync();
@@ -86,12 +86,17 @@ function BackupCard() {
 function AppearanceCard() {
   const [mode, setMode] = useState<ThemeMode>(getTheme);
   const pick = (m: ThemeMode) => { setTheme(m); setMode(m); };
+  const [glass, setGlassState] = useState(getGlass);
   return (
     <section className="card"><h2>Appearance</h2>
       <div className="seg" role="group" aria-label="Theme">
         {(["auto", "light", "dark"] as ThemeMode[]).map((m) => (
           <button key={m} type="button" aria-pressed={mode === m} onClick={() => pick(m)}>{m === "auto" ? "Match phone" : m === "light" ? "Light" : "Dark"}</button>
         ))}
+      </div>
+      <div className="seg" role="group" aria-label="Glass effect" style={{ gridTemplateColumns: "1fr 1fr", marginTop: 8 }}>
+        <button type="button" aria-pressed={glass} onClick={() => { setGlass(true); setGlassState(true); }}>Glass effect</button>
+        <button type="button" aria-pressed={!glass} onClick={() => { setGlass(false); setGlassState(false); }}>Solid cards</button>
       </div>
     </section>
   );
